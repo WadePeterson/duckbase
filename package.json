@@ -1,0 +1,37 @@
+{
+  "name": "duckbase",
+  "version": "0.0.6",
+  "description": "React + Redux Wrapper for Firebase",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "repository": "https://github.com/WadePeterson/duckbase.git",
+  "author": "Wade Peterson",
+  "license": "MIT",
+  "keywords": [
+    "firebase",
+    "react",
+    "redux",
+    "react-redux"
+  ],
+  "scripts": {
+    "build": "rm -rf lib && tsc",
+    "prepublish": "npm run build"
+  },
+  "peerDependencies": {
+    "firebase": "^3.0 || ^4.0",
+    "react": "^15.0.0",
+    "react-redux": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/lodash.isobject": "^3.0.2",
+    "@types/prop-types": "^15.5.1",
+    "@types/react-redux": "^4.4.40",
+    "firebase": "^4.1.0",
+    "redux": "^3.6.0",
+    "typescript": "^2.3.4"
+  },
+  "dependencies": {
+    "lodash.isobject": "^3.0.2",
+    "prop-types": "^15.5.10"
+  }
+}
