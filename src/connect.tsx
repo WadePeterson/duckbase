@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Dispatch, Store } from 'redux';
 import { FirebaseWatcher } from './watcher';
 
-export type MapPropsToRefs<TProps> = (props: TProps) => string | string[];
+export type MapPropsToPaths<TProps> = (props: TProps) => string | string[];
 
 function arrayDiff<T>(a: T[], b: T[]) {
   return a.filter(val => b.indexOf(val) === -1);
@@ -14,7 +14,7 @@ interface Context {
   store: Store<any>;
 }
 
-export default function firebaseConnect<TProps, T extends React.ComponentClass<TProps>>(mapPropsToRefs: MapPropsToRefs<TProps>) {
+export default function firebaseConnect<TProps, T extends React.ComponentClass<TProps>>(mapPropsToPaths: MapPropsToPaths<TProps>) {
   return (WrappedComponent: T): T => {
     class Container extends React.Component<TProps, any> {
       private readonly watcher: FirebaseWatcher;
@@ -55,7 +55,7 @@ export default function firebaseConnect<TProps, T extends React.ComponentClass<T
       }
 
       getPaths(props: Readonly<TProps>) {
-        const paths = mapPropsToRefs(props) || [];
+        const paths = mapPropsToPaths(props) || [];
         return Array.isArray(paths) ? paths : [paths];
       }
     }
