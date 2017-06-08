@@ -1,54 +1,53 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
-import * as FirebaseActions from './actions';
-import * as firebase from 'firebase';
+import { Dispatch, Store } from 'redux';
+import { FirebaseWatcher } from './watcher';
 
 export type MapPropsToRefs<TProps> = (props: TProps) => string | string[];
-export type Subscriptions = { [key: string]: number };
 
 function arrayDiff<T>(a: T[], b: T[]) {
   return a.filter(val => b.indexOf(val) === -1);
 }
 
-type PropsWithDispatch<T> = T & { dispatch: Dispatch<any> };
+interface Context {
+  firebaseWatcher: FirebaseWatcher;
+  store: Store<any>;
+}
 
 export default function firebaseConnect<TProps, T extends React.ComponentClass<TProps>>(mapPropsToRefs: MapPropsToRefs<TProps>) {
   return (WrappedComponent: T): T => {
-    class Container extends React.Component<PropsWithDispatch<TProps>, any> {
-      private app: firebase.app.App;
-      private subscriptions: Subscriptions;
-
-      static propTypes = {
-        dispatch: PropTypes.func.isRequired
-      }
+    class Container extends React.Component<TProps, any> {
+      private readonly watcher: FirebaseWatcher;
+      private readonly store: Store<any>;
 
       static contextTypes = {
-        firebaseApp: PropTypes.object.isRequired,
-        firebaseSubscriptions: PropTypes.object.isRequired
+        firebaseWatcher: PropTypes.object.isRequired,
+        store: PropTypes.object.isRequired
       }
 
-      constructor(props: PropsWithDispatch<TProps>, context: any) {
+      constructor(props: TProps, context: Context) {
         super(props, context);
-        this.app = context.firebaseApp;
-        this.subscriptions = context.firebaseSubscriptions;
-        this.subscribe(this.getPaths(props));
+        this.watcher = context.firebaseWatcher;
+        this.store = context.store;
       }
 
-      componentWillReceiveProps(nextProps: Readonly<PropsWithDispatch<TProps>>) {
+      componentDidMount() {
+        this.watcher.subscribe(this.store, this.getPaths(this.props));
+      }
+
+      componentWillReceiveProps(nextProps: Readonly<TProps>) {
         const previousPaths = this.getPaths(this.props);
         const nextPaths = this.getPaths(nextProps);
 
         // unsubscribe from paths that are no longer needed
-        this.unsubscribe(arrayDiff(previousPaths, nextPaths));
+        this.watcher.unsubscribe(arrayDiff(previousPaths, nextPaths));
 
         // subscribe to new paths
-        this.subscribe(arrayDiff(nextPaths, previousPaths));
+        this.watcher.subscribe(this.store, arrayDiff(nextPaths, previousPaths));
       }
 
       componentWillUnmount() {
-        this.unsubscribe(this.getPaths(this.props));
+        this.watcher.unsubscribe(this.getPaths(this.props));
       }
 
       render() {
@@ -59,33 +58,8 @@ export default function firebaseConnect<TProps, T extends React.ComponentClass<T
         const paths = mapPropsToRefs(props) || [];
         return Array.isArray(paths) ? paths : [paths];
       }
-
-      subscribe = (paths: string[]) => {
-        paths.forEach(path => {
-          const subscriptionCount = this.subscriptions[path] || 0;
-          if (subscriptionCount === 0) {
-            this.app.database().ref(path).on('value', (response: any) => {
-              console.log(path, response.val())
-              this.props.dispatch(FirebaseActions.setNodeValue({ path, value: response && response.val() }));
-            }, (err: any) => console.error(err));
-          }
-          this.subscriptions[path] = subscriptionCount + 1;
-        });
-      }
-
-      unsubscribe = (paths: string[]) => {
-        paths.forEach(path => {
-          const subscriptionCount = this.subscriptions[path] || 0;
-          if (subscriptionCount > 0) {
-            if (subscriptionCount === 1) {
-              this.app.database().ref(path).off('value');
-            }
-            this.subscriptions[path] = subscriptionCount - 1;
-          }
-        });
-      }
     }
 
-    return connect<TProps>()(Container as any);
+    return Container as any;
   };
 }

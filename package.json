@@ -1,6 +1,6 @@
 {
   "name": "duckbase",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "React + Redux Wrapper for Firebase",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -19,15 +19,10 @@
     "watch": "nodemon -e ts,tsx --ignore 'lib/' -x 'npm run build'"
   },
   "peerDependencies": {
-    "firebase": "^3.0 || ^4.0",
     "react": "^15.0.0",
     "react-redux": "^5.0.5"
   },
   "devDependencies": {
-    "@types/lodash.isobject": "^3.0.2",
-    "@types/prop-types": "^15.5.1",
-    "@types/react-redux": "^4.4.40",
-    "firebase": "^4.1.0",
     "nodemon": "^1.11.0",
     "react": "^15.5.4",
     "react-redux": "^5.0.5",
@@ -35,6 +30,9 @@
     "typescript": "^2.3.4"
   },
   "dependencies": {
+    "@types/lodash.isobject": "^3.0.2",
+    "@types/prop-types": "^15.5.1",
+    "@types/react-redux": "^4.4.40",
     "lodash.isobject": "^3.0.2",
     "prop-types": "^15.5.10"
   }

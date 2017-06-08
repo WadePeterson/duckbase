@@ -2,15 +2,34 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "lib": ["dom", "es5", "es6"],
+    "lib": [
+      "dom",
+      "es5",
+      "es6"
+    ],
     "jsx": "react",
     "sourceMap": true,
     "outDir": "./lib",
+    "rootDir": "./src",
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
-    "noFallthroughCasesInSwitch": true
-  }
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "node_modules/@types/*",
+        "*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

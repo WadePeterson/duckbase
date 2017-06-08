@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import { Subscriptions } from './connect';
+import { FirebaseWatcher } from './watcher';
 
 export interface FirebaseProviderProps {
   children: React.ReactNode;
@@ -8,22 +8,19 @@ export interface FirebaseProviderProps {
 }
 
 export default class FirebaseProvider extends React.Component<FirebaseProviderProps, {}> {
-  private app: firebase.app.App;
-  private subscriptions: Subscriptions;
+  private watcher: FirebaseWatcher;
 
   static childContextTypes = {
-    firebaseApp: PropTypes.object,
-    firebaseSubscriptions: PropTypes.object
+    firebaseWatcher: PropTypes.object
   }
 
   constructor(props: FirebaseProviderProps, context: any) {
     super(props, context);
-    this.app = props.firebaseApp;
-    this.subscriptions = {};
+    this.watcher = new FirebaseWatcher(props.firebaseApp);
   }
 
   getChildContext() {
-    return { firebaseApp: this.app, firebaseSubscriptions: this.subscriptions };
+    return { firebaseWatcher: this.watcher };
   }
 
   render() {
