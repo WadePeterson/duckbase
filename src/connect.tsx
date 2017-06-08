@@ -56,7 +56,11 @@ export default function firebaseConnect<TProps, T extends React.ComponentClass<T
 
       getPaths(props: Readonly<TProps>) {
         const paths = mapPropsToPaths(props) || [];
-        return Array.isArray(paths) ? paths : [paths];
+        return this.normalizePaths(Array.isArray(paths) ? paths : [paths]);
+      }
+
+      normalizePaths(paths: string[]) {
+        return paths.map((path) => path.split('/').filter((p) => !!p).join('/'));
       }
     }
 
