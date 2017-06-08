@@ -65,8 +65,9 @@ export default function firebaseConnect<TProps, T extends React.ComponentClass<T
           const subscriptionCount = this.subscriptions[path] || 0;
           if (subscriptionCount === 0) {
             this.app.database().ref(path).on('value', (response: any) => {
+              console.log(path, response.val())
               this.props.dispatch(FirebaseActions.setNodeValue({ path, value: response && response.val() }));
-            });
+            }, (err: any) => console.error(err));
           }
           this.subscriptions[path] = subscriptionCount + 1;
         });

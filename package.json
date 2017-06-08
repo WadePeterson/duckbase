@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "build": "rm -rf lib && tsc",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "watch": "nodemon -e ts,tsx --ignore 'lib/' -x 'npm run build'"
   },
   "peerDependencies": {
     "firebase": "^3.0 || ^4.0",
@@ -27,6 +28,9 @@
     "@types/prop-types": "^15.5.1",
     "@types/react-redux": "^4.4.40",
     "firebase": "^4.1.0",
+    "nodemon": "^1.11.0",
+    "react": "^15.5.4",
+    "react-redux": "^5.0.5",
     "redux": "^3.6.0",
     "typescript": "^2.3.4"
   },
