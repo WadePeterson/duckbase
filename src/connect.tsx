@@ -14,9 +14,11 @@ interface Context {
   store: Store<any>;
 }
 
-export default function firebaseConnect<TProps, T extends React.ComponentClass<TProps>>(mapPropsToPaths: MapPropsToPaths<TProps>) {
-  return (WrappedComponent: T): T => {
-    class Container extends React.Component<TProps, any> {
+export type Component<P> = React.ComponentClass<P> | React.StatelessComponent<P>;
+
+export default function firebaseConnect<TProps, T extends Component<TProps>>(mapPropsToPaths: MapPropsToPaths<TProps>) {
+  return (WrappedComponent: T): React.ComponentClass<TProps> => {
+    return class Container extends React.Component<TProps, any> {
       private readonly watcher: FirebaseWatcher;
       private readonly store: Store<any>;
 
@@ -51,7 +53,8 @@ export default function firebaseConnect<TProps, T extends React.ComponentClass<T
       }
 
       render() {
-        return <WrappedComponent { ...this.props } />;
+        const Comp = WrappedComponent as any;
+        return <Comp { ...this.props } />;
       }
 
       getPaths(props: Readonly<TProps>) {
@@ -63,7 +66,5 @@ export default function firebaseConnect<TProps, T extends React.ComponentClass<T
         return paths.map((path) => path.split('/').filter((p) => !!p).join('/'));
       }
     }
-
-    return Container as any;
   };
 }
