@@ -1,55 +1,49 @@
-import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import { Dispatch, Store } from 'redux';
-import { FirebaseWatcher } from './watcher';
-
-export type MapPropsToPaths<TProps> = (props: TProps) => string | string[];
-
-function arrayDiff<T>(a: T[], b: T[]) {
-  return a.filter(val => b.indexOf(val) === -1);
-}
+import * as React from 'react';
+import { DuckbaseQuery, DuckbaseQueryBuilder, PathMap } from './query';
+import { Duckbase } from './watcher';
 
 interface Context {
-  firebaseWatcher: FirebaseWatcher;
-  store: Store<any>;
+  duckbase: Duckbase;
 }
 
+export type MapPropsToPaths<TProps> = (props: TProps, db: DuckbaseQueryBuilder) => string | DuckbaseQuery | Array<string | DuckbaseQuery>;
 export type Component<P> = React.ComponentClass<P> | React.StatelessComponent<P>;
 
 export default function firebaseConnect<TProps, T extends Component<TProps>>(mapPropsToPaths: MapPropsToPaths<TProps>) {
+  const queryBuilder = new DuckbaseQueryBuilder();
+
   return (WrappedComponent: T): React.ComponentClass<TProps> => {
     return class Container extends React.Component<TProps, any> {
-      private readonly watcher: FirebaseWatcher;
-      private readonly store: Store<any>;
+      private readonly duckbase: Duckbase;
+      private prevPaths: PathMap = {};
 
       static contextTypes = {
-        firebaseWatcher: PropTypes.object.isRequired,
-        store: PropTypes.object.isRequired
-      }
+        duckbase: PropTypes.object.isRequired
+      };
 
       constructor(props: TProps, context: Context) {
         super(props, context);
-        this.watcher = context.firebaseWatcher;
-        this.store = context.store;
+        this.duckbase = context.duckbase;
       }
 
       componentDidMount() {
-        this.watcher.subscribe(this.store, this.getPaths(this.props));
+        this.watch(this.props);
       }
 
       componentWillReceiveProps(nextProps: Readonly<TProps>) {
-        const previousPaths = this.getPaths(this.props);
-        const nextPaths = this.getPaths(nextProps);
-
-        // unsubscribe from paths that are no longer needed
-        this.watcher.unsubscribe(arrayDiff(previousPaths, nextPaths));
-
-        // subscribe to new paths
-        this.watcher.subscribe(this.store, arrayDiff(nextPaths, previousPaths));
+        this.watch(nextProps);
       }
 
       componentWillUnmount() {
-        this.watcher.unsubscribe(this.getPaths(this.props));
+        this.duckbase.watch(this.prevPaths, {});
+        this.prevPaths = {};
+      }
+
+      watch(props: Readonly<TProps>) {
+        const paths = this.getPaths(props);
+        this.duckbase.watch(this.prevPaths, paths);
+        this.prevPaths = paths;
       }
 
       render() {
@@ -57,14 +51,14 @@ export default function firebaseConnect<TProps, T extends Component<TProps>>(map
         return <Comp { ...this.props } />;
       }
 
-      getPaths(props: Readonly<TProps>) {
-        const paths = mapPropsToPaths(props) || [];
-        return this.normalizePaths(Array.isArray(paths) ? paths : [paths]);
+      getPaths(props: Readonly<TProps>): PathMap {
+        let pathLikes = mapPropsToPaths(props, queryBuilder) || [];
+        pathLikes = Array.isArray(pathLikes) ? pathLikes : [pathLikes];
+        return pathLikes.reduce((acc, pathLike) => {
+          const path = typeof pathLike === 'string' ? { key: pathLike } : { query: pathLike, key: pathLike.toString() };
+          return Object.assign(acc, { [path.key]: path });
+        }, {});
       }
-
-      normalizePaths(paths: string[]) {
-        return paths.map((path) => path.split('/').filter((p) => !!p).join('/'));
-      }
-    }
+    };
   };
 }
