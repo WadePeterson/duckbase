@@ -1,26 +1,28 @@
-import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import { FirebaseWatcher } from './watcher';
+import * as React from 'react';
+import { Store } from 'redux';
+import { Duckbase } from './watcher';
 
 export interface FirebaseProviderProps {
   children: React.ReactNode;
   firebaseApp: firebase.app.App;
+  store: Store<any>;
 }
 
 export default class FirebaseProvider extends React.Component<FirebaseProviderProps, {}> {
-  private watcher: FirebaseWatcher;
+  private duckbase: Duckbase;
 
   static childContextTypes = {
-    firebaseWatcher: PropTypes.object
-  }
+    duckbase: PropTypes.object
+  };
 
   constructor(props: FirebaseProviderProps, context: any) {
     super(props, context);
-    this.watcher = new FirebaseWatcher(props.firebaseApp);
+    this.duckbase = new Duckbase(props.firebaseApp, props.store);
   }
 
   getChildContext() {
-    return { firebaseWatcher: this.watcher };
+    return { duckbase: this.duckbase };
   }
 
   render() {

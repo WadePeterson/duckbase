@@ -1,6 +1,6 @@
 {
   "name": "duckbase",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "React + Redux Wrapper for Firebase",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -15,26 +15,37 @@
   ],
   "scripts": {
     "build": "rm -rf lib && tsc",
+    "build:test": "rm -rf testDist && tsc -p test/tsconfig.json",
+    "lint": "tslint \"{./**/*.ts,./**/*.tsx}\" --exclude \"{./node_modules/**,./**/*.d.ts}\"",
     "prepublish": "npm run build",
-    "watch": "nodemon -e ts,tsx --ignore 'lib/' -x 'npm run build'"
-  },
-  "peerDependencies": {
-    "react": "^15.0.0",
-    "react-redux": "^5.0.5"
-  },
-  "devDependencies": {
-    "firebase": "^4.1.2",
-    "nodemon": "^1.11.0",
-    "react": "^15.5.4",
-    "react-redux": "^5.0.5",
-    "redux": "^3.6.0",
-    "typescript": "^2.3.4"
+    "test": "npm run build:test && NODE_ENV=test mocha testDist/test/**/*.js",
+    "test:watch": "nodemon --ignore lib --ignore testDist -e ts,tsx -x 'npm run test --silent || true'",
+    "watch": "nodemon --watch src -e ts,tsx -x 'npm run build'"
   },
   "dependencies": {
     "@types/lodash.isobject": "^3.0.2",
     "@types/prop-types": "^15.5.1",
-    "@types/react-redux": "^4.4.40",
     "lodash.isobject": "^3.0.2",
     "prop-types": "^15.5.10"
+  },
+  "peerDependencies": {
+    "react": "^0.14.0 || ^15.0.0-0 || ^16.0.0-0",
+    "redux": "^2.0.0 || ^3.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^8.0.17",
+    "@types/react": "^15.6.0",
+    "@types/sinon": "^2.3.3",
+    "chai": "^4.1.0",
+    "firebase": "^4.2.0",
+    "mocha": "^3.4.2",
+    "nodemon": "^1.11.0",
+    "react": "^15.6.1",
+    "redux": "^3.7.2",
+    "sinon": "^2.4.1",
+    "tslint": "^5.5.0",
+    "typescript": "^2.4.2"
   }
 }

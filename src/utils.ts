@@ -1,8 +1,23 @@
-export interface Action<TPayload> {
-  type: string;
-  payload: TPayload;
+export interface DuckbaseState {
+  data: { [key: string]: any };
+  query: QueryState;
 }
 
-export function returnType<T>(fn: (...args: any[]) => T): T {
-  return null as any as T;
+export interface QueryState {
+  data: { [key: string]: any };
+  namesToKeys: { [name: string]: string };
+}
+
+export function getValue<T>(state: DuckbaseState, path: string): T | null {
+  return getDeepValue<T>(state.data, path);
+}
+
+export function getQueryValue<T>(state: DuckbaseState, queryName: string): T | null {
+  const queryKey = state.query.namesToKeys[queryName];
+  return queryKey ? getDeepValue(state.query.data, queryKey) : null;
+}
+
+function getDeepValue<T>(data: { [key: string]: any }, path: string): T | null {
+  const value = path.split('/').filter(p => !!p).reduce((acc, key) => acc && acc[key], data);
+  return typeof value === 'undefined' ? null : value as T;
 }

@@ -1,44 +1,62 @@
-import { Store } from 'redux';
 import * as firebase from 'firebase';
+import { Store } from 'redux';
 import * as FirebaseActions from './actions';
+import { diffKeys, getRefFromPath, Path, PathMap } from './query';
 
-export type Subscriptions = { [key: string]: number };
+export interface Subscriptions {
+  [key: string]: Subscription;
+}
 
-export class FirebaseWatcher {
-  private subscriptions: Subscriptions;
-  private app: firebase.app.App;
+export interface Subscription {
+  count: number;
+  ref: firebase.database.Query;
+}
 
-  constructor(app: firebase.app.App) {
+export class Duckbase {
+  private readonly subscriptions: Subscriptions;
+  private readonly app: firebase.app.App;
+  private readonly store: Store<any>;
+
+  constructor(app: firebase.app.App, store: Store<any>) {
     this.app = app;
+    this.store = store;
     this.subscriptions = {};
   }
 
-  subscribe(store: Store<any>, paths: string[]) {
+  watch(prevPaths: PathMap, nextPaths: PathMap) {
+    this.subscribe(diffKeys(nextPaths, prevPaths));
+    this.unsubscribe(diffKeys(prevPaths, nextPaths));
+  }
+
+  subscribe(paths: Path[]) {
     paths.forEach(path => {
-      const subscriptionCount = this.subscriptions[path] || 0;
-      if (subscriptionCount === 0) {
-        this.app.database().ref(path).on('value', (response) => {
+      const subscription = this.subscriptions[path.key];
+
+      if (subscription) {
+        subscription.count++;
+      } else {
+        const ref = getRefFromPath(this.app, path);
+        this.subscriptions[path.key] = { count: 1, ref };
+
+        ref.on('value', (response) => {
           const value = response && response.val();
-          store.dispatch(FirebaseActions.setNodeValue({ path, value }));
-        }, (err: any) => {
-          if (err) {
-            console.error(err);
-          }
+          this.store.dispatch(FirebaseActions.setNodeValue({ path, value }));
         });
       }
-
-      this.subscriptions[path] = subscriptionCount + 1;
     });
   }
 
-  unsubscribe(paths: string[]) {
+  unsubscribe(paths: Path[]) {
     paths.forEach(path => {
-      const subscriptionCount = this.subscriptions[path] || 0;
-      if (subscriptionCount > 0) {
-        if (subscriptionCount === 1) {
-          this.app.database().ref(path).off('value');
+      const subscription = this.subscriptions[path.key];
+
+      if (subscription) {
+        if (subscription.count === 1) {
+          subscription.ref.off('value');
+          delete this.subscriptions[path.key];
+        } else {
+          subscription.count--;
         }
-        this.subscriptions[path] = subscriptionCount - 1;
       }
     });
   }
