@@ -109,7 +109,7 @@ Makes the Redux store and firebaseApp available to the `firebaseConnect()` calls
 This function returns paths and/or queries the component will subscribe to. Whenever these paths or queries are updated in firebase, the firebase redux state will be updated
 
 #### Arguments
-- `mapPropsToPaths(props:` *Object*`, queryBuilder:` *DuckbaseQueryBuilder*`): `*string | DuckbaseQuery | Array<string | DuckbaseQuery>*
+- `mapPropsToPaths(props:` *Object*, `queryBuilder`: *DuckbaseQueryBuilder*): *string | DuckbaseQuery | Array<string | DuckbaseQuery>*
 
   This function is passed the component props and a `DuckbaseQueryBuilder`. The function can return:
   - a single string representing a firebase path to listen to
