@@ -41,6 +41,8 @@ export class Duckbase {
         ref.on('value', (response) => {
           const value = response && response.val();
           this.store.dispatch(FirebaseActions.setNodeValue({ path, value }));
+        }, (error: any) => {
+          console.error(error); // tslint:disable-line:no-console
         });
       }
     });

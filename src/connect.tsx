@@ -1,6 +1,6 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { DuckbaseQuery, DuckbaseQueryBuilder, PathMap } from './query';
+import { DuckbaseQuery, DuckbaseQueryBuilder, PathMap, getPath } from './query';
 import { Duckbase } from './watcher';
 
 interface Context {
@@ -55,7 +55,7 @@ export default function firebaseConnect<TProps, T extends Component<TProps>>(map
         let pathLikes = mapPropsToPaths(props, queryBuilder) || [];
         pathLikes = Array.isArray(pathLikes) ? pathLikes : [pathLikes];
         return pathLikes.reduce((acc, pathLike) => {
-          const path = typeof pathLike === 'string' ? { key: pathLike } : { query: pathLike, key: pathLike.toString() };
+          const path = getPath(pathLike);
           return Object.assign(acc, { [path.key]: path });
         }, {});
       }
