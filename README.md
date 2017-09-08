@@ -130,11 +130,27 @@ Gets data from the firebase redux state at the specified path. Returns `null` if
 
 ### `getQueryValue(firebaseState, queryName)`
 
-Gets data for a named query from the firebase redux state. The name must be one specified in a `DuckbaseQuery` via the `name()` call. Returns `null` if the query returned no data.
+Gets data for a named query from the firebase redux state. Returns `null` if the query returned no data.
+
+#### Arguments
+- `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
+- `queryName` *string*: A query name specified in a `DuckbaseQuery` via the `name()` call.
+
+### `isLoading(firebaseState, path)`
+
+Returns `true` when the data at this path is being fetched for the first time. Returns `false` otherwise.
 
 #### Arguments
 - `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
 - `path` *string*: The firebase path to the data.
+
+### `isQueryLoading(firebaseState, queryName)`
+
+Returns `true` when the data for this query is being fetched for the first time. Returns `false` otherwise. 
+
+#### Arguments
+- `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
+- `queryName` *string*: A query name specified in a `DuckbaseQuery` via the `name()` call.
 
 ## License
 
