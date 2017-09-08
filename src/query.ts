@@ -13,7 +13,7 @@ export function diffKeys<T>(pathsA: { [key: string]: T }, pathsB: { [key: string
   return Object.keys(pathsA).filter(key => !pathsB[key]).map(key => pathsA[key]);
 }
 
-function normalizePath(path: string) {
+export function normalizePath(path: string) {
   return path.split('/').filter(p => !!p).join('/');
 }
 

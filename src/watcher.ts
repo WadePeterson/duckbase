@@ -38,6 +38,8 @@ export class Duckbase {
         const ref = getRefFromPath(this.app, path);
         this.subscriptions[path.key] = { count: 1, ref };
 
+        this.store.dispatch(FirebaseActions.startFetch({ path }));
+
         ref.on('value', (response) => {
           const value = response && response.val();
           this.store.dispatch(FirebaseActions.setNodeValue({ path, value }));
@@ -54,6 +56,7 @@ export class Duckbase {
 
       if (subscription) {
         if (subscription.count === 1) {
+          this.store.dispatch(FirebaseActions.stopListening({ path }));
           subscription.ref.off('value');
           delete this.subscriptions[path.key];
         } else {

@@ -13,6 +13,7 @@
     "no-unused-expression": false,
     "no-var-requires": false,
     "only-arrow-functions": [false],
+    "ordered-imports": false,
     "quotemark": [true, "single"],
     "trailing-comma": [false],
     "variable-name": [false]
