@@ -10,11 +10,15 @@ interface Context {
 export type MapPropsToPaths<TProps> = (props: TProps, db: DuckbaseQueryBuilder) => string | DuckbaseQuery | Array<string | DuckbaseQuery>;
 export type Component<P> = React.ComponentClass<P> | React.StatelessComponent<P>;
 
+function getDisplayName(WrappedComponent: Component<any>) {
+  return WrappedComponent.displayName || WrappedComponent.name || 'Component';
+}
+
 export default function firebaseConnect<TProps, T extends Component<TProps>>(mapPropsToPaths: MapPropsToPaths<TProps>) {
   const queryBuilder = new DuckbaseQueryBuilder();
 
   return (WrappedComponent: T): React.ComponentClass<TProps> => {
-    return class Container extends React.Component<TProps, any> {
+    const Wrapper: React.ComponentClass<TProps> = class FirebaseConnect extends React.PureComponent<TProps, any> {
       private readonly duckbase: Duckbase;
       private prevPaths: PathMap = {};
 
@@ -60,5 +64,9 @@ export default function firebaseConnect<TProps, T extends Component<TProps>>(map
         }, {});
       }
     };
+
+    Wrapper.displayName = `FirebaseConnect(${getDisplayName(WrappedComponent)})`;
+
+    return Wrapper;
   };
 }
