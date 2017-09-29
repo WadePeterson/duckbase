@@ -11,6 +11,11 @@ React + Redux Wrapper for Firebase
 - Supports Firebase queries
 - First class support for Typescript
 
+## Change Log
+### v0.4.0
+- Added `snapshot` util which returns a snapshot of the Duckbase state for a given path. The snapshot allows you to get the value of the path, as well as additional metadata, such as the loading state of the path.
+- Added `hasLoaded` util which is slightly different from `isLoading`: it returns `true` if the data for a path has ever been loaded from firebase.
+
 ## Installation
 To install the latest version:
 ```
@@ -120,7 +125,42 @@ This function returns paths and/or queries the component will subscribe to. When
 
 The reducer Duckbase uses to maintain the firebase state. This reducer should typically be combined with your app's reducers when creating the redux store
 
-### `getValue(firebaseState, path)`
+### `snapshot(state, path): DuckbaseSnapshot`
+
+Gets a snapshot of the Duckbase state for a given path (or query, if provided a `queryName`). The snapshot provides easy access to read the data value of a path as well as metadata such as loading information.
+
+#### Arguments
+- `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
+- `path` *string* | *Object*: The firebase path to the data, or an object with a `queryName` property to get a snapshot for a query.
+
+#### Returns
+Returns a `DuckbaseSnapshot` which has the following methods:
+- `val(): any`
+
+   Returns the value of the snapshot. Returns `null` if data does not exist or has not yet been fetched.
+
+- `isFetching(): boolean`
+
+   Returns `true` when the data at this path is being fetched for the first time. Returns `false` otherwise. 
+   
+   If a component stops listening to a path and then starts listening again later, a new listener will be established, causing this value to be `true` again until the latest data is fetched.
+- `hasLoaded(): boolean`
+
+   Returns `true` if the data for this path has ever been loaded (even if it was `null`). 
+   
+   This will remain true even if a component stops listening to a path and then starts listening to it again. Can be useful for showing a loading indicator only the first time data is fetched, and showing cached data on subsequent loads.
+
+- `lastLoadedTime(): number | null`
+
+    Returns a timestamp in milliseconds of the last time the data for this path has been loaded in Duckbase. Returns `null` if data has never been fetched for this path.
+
+- `lastError(): FirebaseError | null`
+
+    Returns the latest `FirebaseError` that occured while listening to the path (such as a Permission Denied error).
+    
+    Returns `null` if no errors have occured.
+
+### `getValue(firebaseState, path): any`
 
 Gets data from the firebase redux state at the specified path. Returns `null` if at any point in the path the data is empty.
 
@@ -128,7 +168,7 @@ Gets data from the firebase redux state at the specified path. Returns `null` if
 - `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
 - `path` *string*: The firebase path to the data.
 
-### `getQueryValue(firebaseState, queryName)`
+### `getQueryValue(firebaseState, queryName): any`
 
 Gets data for a named query from the firebase redux state. Returns `null` if the query returned no data.
 
@@ -136,7 +176,19 @@ Gets data for a named query from the firebase redux state. Returns `null` if the
 - `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
 - `queryName` *string*: A query name specified in a `DuckbaseQuery` via the `name()` call.
 
-### `isLoading(firebaseState, path)`
+### `hasLoaded(firebaseState, path): boolean`
+
+Returns `true` when the data at this path has been loaded at least once. 
+
+This can be useful for when you want to show a loading indicator only when fetching data for the first time. This allows you to display cached data on subsequent loads without a loading indicator.
+
+Returns `false` only if the data has never been fetched from firebase.
+
+#### Arguments
+- `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
+- `path` *string*: The firebase path to the data.
+
+### `isLoading(firebaseState, path): boolean`
 
 Returns `true` when the data at this path is being fetched for the first time. Returns `false` otherwise.
 
@@ -144,7 +196,7 @@ Returns `true` when the data at this path is being fetched for the first time. R
 - `firebaseState` *Object*: The root of the redux state handled by Duckbase. 
 - `path` *string*: The firebase path to the data.
 
-### `isQueryLoading(firebaseState, queryName)`
+### `isQueryLoading(firebaseState, queryName): boolean`
 
 Returns `true` when the data for this query is being fetched for the first time. Returns `false` otherwise. 
 

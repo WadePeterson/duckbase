@@ -1,5 +1,5 @@
 import * as Actions from './actions';
-import { Path } from './query';
+import { Path, splitPath } from './query';
 import { DuckbaseState, MetaState } from './utils';
 
 const initialState: DuckbaseState = {
@@ -31,8 +31,8 @@ function updateDeep(state: { [key: string]: any } = {}, path: string[], value: a
 
 function handleSetNodeValue(state: DuckbaseState, action: Action<Actions.SetNodeValuePayload>) {
   const path = action.payload.path;
-  const dataPath = action.payload.path.key.split('/').filter(p => !!p);
-  state = updateMetaForPath(state, path, { isFetching: false });
+  const dataPath = splitPath(action.payload.path.key);
+  state = updateMetaForPath(state, path, { isFetching: false, lastLoadedTime: new Date().getTime() });
 
   if (!path.query) {
     return {
@@ -89,7 +89,11 @@ function handleStopListening(state: DuckbaseState, action: Action<Actions.StopLi
 }
 
 function handleSetError(state: DuckbaseState, action: Action<Actions.SetErrorPayload>) {
-  return updateMetaForPath(state, action.payload.path, { isFetching: false });
+  return updateMetaForPath(state, action.payload.path, {
+    error: action.payload.error,
+    isFetching: false,
+    lastLoadedTime: new Date().getTime()
+  });
 }
 
 export default function reducer(state = initialState, action: Action<any>): DuckbaseState {
