@@ -32,7 +32,7 @@ function updateDeep(state: { [key: string]: any } = {}, path: string[], value: a
 function handleSetNodeValue(state: DuckbaseState, action: Action<Actions.SetNodeValuePayload>) {
   const path = action.payload.path;
   const dataPath = action.payload.path.key.split('/').filter(p => !!p);
-  state = updateMetaForPath(state, path, { isFetching: false });
+  state = updateMetaForPath(state, path, { isFetching: false, lastLoadedTime: new Date().getTime() });
 
   if (!path.query) {
     return {
