@@ -11,3 +11,7 @@ export const startFetch = (payload: StartFetchPayload) => ({ type: START_FETCH, 
 export const STOP_LISTENING = '@@duckbase/STOP_LISTENING';
 export interface StopListeningPayload { path: Path; }
 export const stopListening = (payload: StopListeningPayload) => ({ type: STOP_LISTENING, payload });
+
+export const SET_ERROR = '@@duckbase/SET_ERROR';
+export interface SetErrorPayload { path: Path; }
+export const setError = (payload: SetErrorPayload) => ({ type: SET_ERROR, payload });

@@ -88,6 +88,10 @@ function handleStopListening(state: DuckbaseState, action: Action<Actions.StopLi
   return updateMetaForPath(state, action.payload.path, { isFetching: false });
 }
 
+function handleSetError(state: DuckbaseState, action: Action<Actions.SetErrorPayload>) {
+  return updateMetaForPath(state, action.payload.path, { isFetching: false });
+}
+
 export default function reducer(state = initialState, action: Action<any>): DuckbaseState {
   switch (action.type) {
     case Actions.SET_NODE_VALUE: {
@@ -98,6 +102,9 @@ export default function reducer(state = initialState, action: Action<any>): Duck
     }
     case Actions.STOP_LISTENING: {
       return handleStopListening(state, action);
+    }
+    case Actions.SET_ERROR: {
+      return handleSetError(state, action);
     }
     default:
       return state;
