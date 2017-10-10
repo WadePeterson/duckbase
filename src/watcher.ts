@@ -39,13 +39,14 @@ export class Duckbase {
         this.subscriptions[path.key] = { count: 1, ref };
 
         this.store.dispatch(FirebaseActions.startFetch({ path }));
-
         ref.on('value', (response) => {
           const value = response && response.val();
           this.store.dispatch(FirebaseActions.setNodeValue({ path, value }));
         }, (error: any) => {
-          this.store.dispatch(FirebaseActions.setError({ path }));
-          console.error(error); // tslint:disable-line:no-console
+          this.store.dispatch(FirebaseActions.setError({ error, path }));
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(error.toString()); // tslint:disable-line:no-console
+          }
         });
       }
     });
