@@ -1,3 +1,4 @@
+import * as firebase from 'firebase';
 import { splitPath } from './query';
 
 export interface DuckbaseState {

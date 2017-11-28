@@ -1,3 +1,4 @@
+import * as firebase from 'firebase';
 import { Path } from './query';
 
 export const SET_NODE_VALUE = '@@duckbase/SET_NODE_VALUE';
