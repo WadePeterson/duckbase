@@ -1,7 +1,9 @@
 import * as firebase from 'firebase';
+import { User } from './auth';
 import { splitPath } from './query';
 
 export interface DuckbaseState {
+  auth: { user: User | null, meta: MetaState<firebase.auth.Error> };
   data: { [key: string]: any };
   meta: { [key: string]: MetaState };
   query: QueryState;
@@ -12,20 +14,28 @@ export interface QueryState {
   namesToKeys: { [name: string]: string };
 }
 
-export interface MetaState {
+export interface MetaState<E = firebase.FirebaseError> {
   lastLoadedTime?: number;
   isFetching: boolean;
-  error?: firebase.FirebaseError;
+  error?: E;
 }
 
 export interface DuckbaseQuerySnapshotPath {
   queryName: string;
 }
 
-export class DuckbaseSnapshot<T> {
+export interface DuckbaseSnapshot<T, E = firebase.FirebaseError> {
+  val: () => T | null;
+  lastError: () => E | null;
+  lastLoadedTime: () => number | null;
+  isFetching: () => boolean;
+  hasLoaded: () => boolean;
+}
+
+class DuckbaseDataSnapshot<T> implements DuckbaseSnapshot<T> {
   private _state: DuckbaseState;
-  private _value: T | null;
-  private _meta: MetaState;
+  private _value?: T | null;
+  private _meta?: MetaState;
   private _path?: string;
   private _dataPathArr?: string[];
 
@@ -55,7 +65,7 @@ export class DuckbaseSnapshot<T> {
         this._value = this._path ? getDeepValue(this._state.query.data, this._path) : null;
       }
     }
-    return this._value;
+    return this._value as T | null;
   }
 
   lastError() {
@@ -75,8 +85,22 @@ export class DuckbaseSnapshot<T> {
   }
 }
 
-export function snapshot<T>(state: DuckbaseState, path: string | DuckbaseQuerySnapshotPath) {
-  return new DuckbaseSnapshot<T>(state, path);
+export function currentUserSnapshot(state: DuckbaseState): DuckbaseSnapshot<firebase.UserInfo, firebase.auth.Error> {
+  return {
+    hasLoaded: () => !!state.auth.meta.lastLoadedTime,
+    isFetching: () => state.auth.meta.isFetching,
+    lastError: () => state.auth.meta.error || null,
+    lastLoadedTime: () => state.auth.meta.lastLoadedTime || null,
+    val: () => state.auth.user
+  };
+}
+
+export function getCurrentUser(state: DuckbaseState) {
+  return state.auth.user;
+}
+
+export function snapshot<T>(state: DuckbaseState, path: string | DuckbaseQuerySnapshotPath): DuckbaseSnapshot<T> {
+  return new DuckbaseDataSnapshot<T>(state, path);
 }
 
 export function hasLoaded(state: DuckbaseState, path: string): boolean {

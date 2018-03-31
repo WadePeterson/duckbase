@@ -1,8 +1,10 @@
+import * as Redux from 'redux';
 import * as Actions from './actions';
 import { Path, splitPath } from './query';
 import { DuckbaseState, MetaState } from './utils';
 
 const initialState: DuckbaseState = {
+  auth: { user: null, meta: { isFetching: false } },
   data: {},
   meta: {},
   query: {
@@ -96,21 +98,43 @@ function handleSetError(state: DuckbaseState, action: Action<Actions.SetErrorPay
   });
 }
 
-export default function reducer(state = initialState, action: Action<any>): DuckbaseState {
-  switch (action.type) {
-    case Actions.SET_NODE_VALUE: {
-      return handleSetNodeValue(state, action);
+function handleAuthState(state: DuckbaseState, action: Action<Actions.SetAuthStatePayload>): DuckbaseState {
+  return {
+    ...state, auth: {
+      meta: {
+        ...state.auth.meta,
+        lastLoadedTime: new Date().getTime()
+      },
+      user: action.payload.user
     }
-    case Actions.START_FETCH: {
-      return handleStartFetch(state, action);
-    }
-    case Actions.STOP_LISTENING: {
-      return handleStopListening(state, action);
-    }
-    case Actions.SET_ERROR: {
-      return handleSetError(state, action);
-    }
-    default:
-      return state;
-  }
+  };
 }
+
+function handleAuthError(state: DuckbaseState, action: Action<Actions.SetAuthErrorPayload>): DuckbaseState {
+  return {
+    ...state, auth: {
+      ...state.auth,
+      meta: {
+        ...state.auth.meta,
+        error: action.payload.error,
+        lastLoadedTime: new Date().getTime()
+      }
+    }
+  };
+}
+
+const handlers: { [actionType: string]: (state: DuckbaseState, action: Action<any>) => DuckbaseState } = {
+  [Actions.SET_NODE_VALUE]: handleSetNodeValue,
+  [Actions.START_FETCH]: handleStartFetch,
+  [Actions.STOP_LISTENING]: handleStopListening,
+  [Actions.SET_ERROR]: handleSetError,
+  [Actions.SET_AUTH_STATE]: handleAuthState,
+  [Actions.SET_AUTH_ERROR]: handleAuthError
+};
+
+const reducer: Redux.Reducer<DuckbaseState> = (state = initialState, action) => {
+  const handler = handlers[action.type];
+  return handler ? handler(state, action as Action<any>) : state;
+};
+
+export default reducer;

@@ -10,7 +10,11 @@ export interface FirebaseProviderProps {
   store: Store<any>;
 }
 
-export default class FirebaseProvider extends React.Component<FirebaseProviderProps, {}> {
+export interface FirebaseProviderState {
+  initialized: boolean;
+}
+
+export default class FirebaseProvider extends React.Component<FirebaseProviderProps, FirebaseProviderState> {
   private duckbase: Duckbase;
 
   static childContextTypes = {
@@ -19,7 +23,8 @@ export default class FirebaseProvider extends React.Component<FirebaseProviderPr
 
   constructor(props: FirebaseProviderProps, context: any) {
     super(props, context);
-    this.duckbase = new Duckbase(props.firebaseApp, props.store);
+    this.state = { initialized: false };
+    this.duckbase = new Duckbase(props.firebaseApp, props.store, () => setTimeout(this.setState({ initialized: true })));
   }
 
   getChildContext() {
@@ -27,6 +32,6 @@ export default class FirebaseProvider extends React.Component<FirebaseProviderPr
   }
 
   render() {
-    return React.Children.only(this.props.children);
+    return this.state.initialized ? React.Children.only(this.props.children) : null;
   }
 }

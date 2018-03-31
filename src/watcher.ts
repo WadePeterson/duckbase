@@ -1,6 +1,7 @@
 import * as firebase from 'firebase';
 import { Store } from 'redux';
 import * as FirebaseActions from './actions';
+import { getUserInfo } from './auth';
 import { diffKeys, getRefFromPath, Path, PathMap } from './query';
 
 export interface Subscriptions {
@@ -17,10 +18,22 @@ export class Duckbase {
   private readonly app: firebase.app.App;
   private readonly store: Store<any>;
 
-  constructor(app: firebase.app.App, store: Store<any>) {
+  constructor(app: firebase.app.App, store: Store<any>, onInit: () => any) {
     this.app = app;
     this.store = store;
     this.subscriptions = {};
+
+    let initialized = false;
+    app.auth().onAuthStateChanged(authUser => {
+      const user = authUser ? getUserInfo(authUser) : null;
+      store.dispatch(FirebaseActions.setAuthState({ user }));
+      if (!initialized) {
+        initialized = true;
+        onInit();
+      }
+    }, error => {
+      store.dispatch(FirebaseActions.setAuthError({ error }));
+    });
   }
 
   watch(prevPaths: PathMap, nextPaths: PathMap) {
