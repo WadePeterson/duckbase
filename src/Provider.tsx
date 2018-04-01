@@ -8,6 +8,7 @@ export interface FirebaseProviderProps {
   children: React.ReactNode;
   firebaseApp: firebase.app.App;
   store: Store<any>;
+  waitForAuth?: boolean;
 }
 
 export interface FirebaseProviderState {
@@ -23,8 +24,27 @@ export default class FirebaseProvider extends React.Component<FirebaseProviderPr
 
   constructor(props: FirebaseProviderProps, context: any) {
     super(props, context);
-    this.state = { initialized: false };
-    this.duckbase = new Duckbase(props.firebaseApp, props.store, () => setTimeout(this.setState({ initialized: true })));
+    this.state = { initialized: !props.waitForAuth };
+
+    let onAuthInit = () => { };
+
+    if (props.waitForAuth) {
+      const initTimeout = setTimeout(() => {
+        if (!this.state.initialized) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn('Timed out waiting for firebase auth to initialize'); // tslint:disable-line:no-console
+          }
+          this.setState({ initialized: true });
+        }
+      }, 1000);
+
+      onAuthInit = () => {
+        clearTimeout(initTimeout);
+        this.setState({ initialized: true });
+      };
+    }
+
+    this.duckbase = new Duckbase(props.firebaseApp, props.store, onAuthInit);
   }
 
   getChildContext() {
