@@ -15,12 +15,12 @@ export interface User {
 
 export function getUserInfo(user: firebase.User): User {
   return {
-    creationTime: user.metadata.creationTime || null,
+    creationTime: (user.metadata && user.metadata.creationTime) || null,
     displayName: user.displayName,
     email: user.email,
     emailVerified: user.emailVerified,
     isAnonymous: user.isAnonymous,
-    lastSignInTime: user.metadata.lastSignInTime || null,
+    lastSignInTime: (user.metadata && user.metadata.lastSignInTime) || null,
     phoneNumber: user.phoneNumber,
     photoURL: user.photoURL,
     providerId: user.providerId,
