@@ -1,6 +1,6 @@
 {
   "name": "duckbase",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "React + Redux Wrapper for Firebase",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

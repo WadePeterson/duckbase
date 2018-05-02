@@ -9,6 +9,8 @@ export interface Subscriptions {
 }
 
 export interface Subscription {
+  callback: (...args: any[]) => any;
+  eventName: string;
   count: number;
   ref: firebase.database.Query;
 }
@@ -48,11 +50,12 @@ export class Duckbase {
       if (subscription) {
         subscription.count++;
       } else {
+        const eventName = 'value';
         const ref = getRefFromPath(this.app, path);
-        this.subscriptions[path.key] = { count: 1, ref };
 
         this.store.dispatch(FirebaseActions.startFetch({ path }));
-        ref.on('value', (response) => {
+
+        const callback = ref.on(eventName, (response) => {
           const value = response && response.val();
           this.store.dispatch(FirebaseActions.setNodeValue({ path, value }));
         }, (error: any) => {
@@ -61,6 +64,8 @@ export class Duckbase {
             console.warn(error.toString()); // tslint:disable-line:no-console
           }
         });
+
+        this.subscriptions[path.key] = { count: 1, ref, callback, eventName };
       }
     });
   }
@@ -72,7 +77,7 @@ export class Duckbase {
       if (subscription) {
         if (subscription.count === 1) {
           this.store.dispatch(FirebaseActions.stopListening({ path }));
-          subscription.ref.off('value');
+          subscription.ref.off(subscription.eventName, subscription.callback);
           delete this.subscriptions[path.key];
         } else {
           subscription.count--;
